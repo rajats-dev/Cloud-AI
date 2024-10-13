@@ -1,15 +1,15 @@
-import { auth } from "@clerk/nextjs/server";
-import { PrismaClient } from "@prisma/client/extension";
+import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
-import { error } from "console";
-import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Configuration
 cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDNARY_CLOUD_NAME,
-  api_key: process.env.CLOUDNARY_API_KEY,
-  api_secret: process.env.CLOUDNARY_API_SECRET, // Click 'View API Keys' above to copy your API secret
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET, // Click 'View Credentials' below to copy your API secret
 });
 
 interface CloudinaryUploadResult {
@@ -19,24 +19,25 @@ interface CloudinaryUploadResult {
   [key: string]: any;
 }
 
-export async function POST(request: NextResponse) {
-  const { userId } = auth();
-
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export async function POST(request: NextRequest) {
   try {
+    const { userId } = auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     if (
-      !process.env.NEXT_PUBLIC_CLOUDNARY_CLOUD_NAME ||
-      !process.env.CLOUDNARY_API_KEY ||
-      !process.env.CLOUDNARY_API_SECRET
+      !process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
+      !process.env.CLOUDINARY_API_KEY ||
+      !process.env.CLOUDINARY_API_SECRET
     ) {
       return NextResponse.json(
-        { error: "Cloudnairy credentials not found" },
+        { error: "Cloudinary credentials not found" },
         { status: 500 }
       );
     }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const title = formData.get("title") as string;
@@ -78,8 +79,8 @@ export async function POST(request: NextResponse) {
     });
     return NextResponse.json(video);
   } catch (error) {
-    console.log({ error: "Upload video failed" }, error);
-    return NextResponse.json({ error: "Upload video failed" }, { status: 500 });
+    console.log("UPload video failed", error);
+    return NextResponse.json({ error: "UPload video failed" }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }

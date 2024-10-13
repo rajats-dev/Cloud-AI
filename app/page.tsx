@@ -1,3 +1,14 @@
+"use client";
+import { useRouter } from "next/navigation";
+
 export default function Home() {
-  return <>Hello</>;
+  const router = useRouter();
+  router.push("/home");
+  return (
+    <>
+      <div className="bg-transparent flex justify-center items-center h-screen text-7xl">
+        Welome
+      </div>
+    </>
+  );
 }
